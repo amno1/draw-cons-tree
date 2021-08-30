@@ -2,12 +2,26 @@
 ;; Ported from scheme to common lisp
 ;; http://www.t3x.org/s9fes/draw-tree.scm.html
 ;; It was in the public domain before so it will stay that way now.
-;; Ported from common lisp to emacs lisp
+;; Ported from common lisp to emacs lisp from
 ;; https://github.com/cbaggers/draw-cons-tree
 
 ;; Version: 1.0
 
+
 (require 'cl-lib)
+
+;;; Customize
+
+(defgroup draw-cons-tree nil
+  "Visualize lists as cons boxes."
+  :tag "Draw cons tree"
+  :prefix "draw-cons-tree-"
+  :group 'tools)
+
+(defcustom draw-cons-tree-prettify t
+  "Use box-drawing unicode characters for horizontal and vertical bars."
+  :type 'boolean
+  :group 'draw-cons-tree)
 
 ;;; Entry function
 (defun draw-cons-tree (n)
@@ -25,7 +39,7 @@
     (insert "\n")))
 
 ;;; Internal functions
-;;; Helpers
+;;;; Helpers
 
 (defconst draw-cons-tree--nothing (cons 'N nil))
 (defconst draw-cons-tree--visited (cons 'V nil))
@@ -60,7 +74,7 @@
 (defun draw-cons-tree--remove-trailing-nothing (n)
   (reverse (draw-cons-tree--skip-empty (reverse n))))
 
-;;; Drawing
+;;;; Drawing
 
 (defun draw-cons-tree--draw-fixed-string (s)
   (let* ((b (make-string 8 ?\s))
@@ -81,7 +95,8 @@
          (insert "[o|/]")
          (setq r (nreverse (cons (car n) r))))
         (t
-         (insert "[o|o]---")
+         (insert
+          (if draw-cons-tree-prettify "[o|o]───" "[o|o]---"))
          (draw-cons-tree--draw-conses (cdr n) (cons (car n) r)))))
 
 (defun draw-cons-tree--draw-bars (n)
@@ -95,7 +110,8 @@
                          ((and (consp (car n)) (draw-cons-tree--visitedp (car n)))
                           (%draw-bars (draw-cons-tree--members-of-x (car n)))
                           (%draw-bars (cdr n)))
-                         (t (draw-cons-tree--draw-fixed-string "|")
+                         (t (draw-cons-tree--draw-fixed-string
+                             (if draw-cons-tree-prettify "│" "|"))
                             (%draw-bars (cdr n))))))
     (%draw-bars (draw-cons-tree--members-of-x n))))
 
@@ -119,7 +135,8 @@
                             ((draw-cons-tree--all-verticalp (car n))
                              (draw-cons-tree--draw-fixed-string "[o|/]")
                              (%draw-members (cdr n) (cons (caar n) r)))
-                            (t (draw-cons-tree--draw-fixed-string "|")
+                            (t (draw-cons-tree--draw-fixed-string
+                                (if draw-cons-tree-prettify "│" "|"))
                                (%draw-members (cdr n) (cons (car n) r))))))
     (%draw-members (draw-cons-tree--members-of-x n) nil)))
 

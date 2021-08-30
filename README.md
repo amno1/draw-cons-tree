@@ -27,7 +27,27 @@ Draw an ASCII picture of a cons tree.
                      |       |       |      
                      c      nil      1      
 
+Vertical and horizontal lines can also be drawn with unicode box-drawing
+characters for prettier output if you set `draw-cons-tree-prettify' to 't.
 
+    (draw-cons-tree '((b c (1 2)) (("one" "two") e f)))
+    
+    [o|o]───[o|/]
+     │       │      
+     │      [o|o]───[o|o]───[o|/]
+     │       │       │       │      
+     │       │       e       f      
+     │       │      
+     │      [o|o]───[o|/]
+     │       │       │      
+     │      one     two     
+     │      
+    [o|o]───[o|o]───[o|/]
+     │       │       │      
+     b       c      [o|o]───[o|/]
+                     │       │      
+                     1       2      
+    
 
 Ported from the function library of "Scheme 9 from Empty Space"
     http://www.t3x.org/s9fes/draw-tree.scm.html
