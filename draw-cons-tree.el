@@ -8,19 +8,19 @@
 (require 'cl-lib)
 
 ;;; Entry function
-(defun draw-cons-tree-draw-tree (n)
-  (interactive "SSymbol name: ")
-  (cl-labels ((%draw-tree (n)
-             (when (not (draw-cons-tree--donep n))
-               (format t "~%")
-               (draw-cons-tree--draw-bars n)
-               (format t "~%")
-               (%draw-tree (draw-cons-tree--draw-members n)))))
+(defun draw-cons-tree (n)
+  (cl-labels
+      ((%draw-tree (n)
+                   (when (not (draw-cons-tree--donep n))
+                     (insert "\n")
+                     (draw-cons-tree--draw-bars n)
+                     (insert "\n")
+                     (%draw-tree (draw-cons-tree--draw-members n)))))
     (if (not (consp n))
         (draw-cons-tree--draw-atom n)
       (%draw-tree (draw-cons-tree--mark-visited
                    (draw-cons-tree--draw-conses n))))
-    (format t "~%")))
+    (insert "\n")))
 
 ;;; Internal functions
 ;;; Helpers
@@ -54,47 +54,48 @@
 
 
 ;;; Drawing
-(defun draw-cons-tree--draw-fixed-string (s) 
+(defun draw-cons-tree--draw-fixed-string (s)
   (let* ((b (make-string 8 ?\s))
          (k (length s))
          (s (if (> k 7) (cl-subseq s 0 7) s))
          (s (if (< k 3) (cl-concatenate 'string " " s) s))
          (k (length s)))
-    (format t (cl-concatenate 'string s (cl-subseq b 0 (- 8 k))))))
+    (insert (cl-concatenate 'string s (cl-subseq b 0 (- 8 k))))))
 
-(defun draw-cons-tree--draw-atom (n) (draw-cons-tree--draw-fixed-string (format nil "~s" n)))
+(defun draw-cons-tree--draw-atom (n)
+  (draw-cons-tree--draw-fixed-string (insert (format "%s" n))))
 
 (defun draw-cons-tree--draw-conses (n &optional r)
   (cond ((not (consp n)) (draw-cons-tree--draw-atom n) (reverse r))
-        ((null (cdr n)) (format t "[o|/]") (reverse (cons (car n) r)))
-        (t (format t "[o|o]---") (draw-cons-tree--draw-conses (cdr n) (cons (car n) r)))))
+        ((null (cdr n)) (insert "[o|/]") (reverse (cons (car n) r)))
+        (t (insert "[o|o]---") (draw-cons-tree--draw-conses (cdr n) (cons (car n) r)))))
 
 (defun draw-cons-tree--draw-bars (n)
   (cl-labels ((%draw-bars (n)
-             (cond ((not (consp n)))
-                   ((draw-cons-tree--emptyp (car n))
-                    (draw-cons-tree--draw-fixed-string "") (%draw-bars (cdr n))) 
-                   ((and (consp (car n)) (draw-cons-tree--visitedp (car n)))
-                    (%draw-bars (draw-cons-tree--members-of-x (car n)))
-                    (%draw-bars (cdr n)))
-                   (t (draw-cons-tree--draw-fixed-string "|") (%draw-bars (cdr n))))))
+                          (cond ((not (consp n)))
+                                ((draw-cons-tree--emptyp (car n))
+                                 (draw-cons-tree--draw-fixed-string "") (%draw-bars (cdr n))) 
+                                ((and (consp (car n)) (draw-cons-tree--visitedp (car n)))
+                                 (%draw-bars (draw-cons-tree--members-of-x (car n)))
+                                 (%draw-bars (cdr n)))
+                                (t (draw-cons-tree--draw-fixed-string "|") (%draw-bars (cdr n))))))
     (%draw-bars (draw-cons-tree--members-of-x n))))
 
 (defun draw-cons-tree--draw-members (n)
   (cl-labels ((%draw-members (n r)
-             (cond ((not (consp n)) (draw-cons-tree--mark-visited
-                                     (draw-cons-tree--remove-trailing-nothing
-                                      (reverse r))))
-                   ((draw-cons-tree--emptyp (car n)) (draw-cons-tree--draw-fixed-string "")
-                    (%draw-members (cdr n) (cons draw-cons-tree--nothing r)))
-                   ((not (consp (car n))) (draw-cons-tree--draw-atom (car n))
-                    (%draw-members (cdr n) (cons draw-cons-tree--nothing r)))
-                   ((null (cdr n))
-                    (%draw-members (cdr n) (cons (draw-cons-tree--draw-final (car n)) r)))
-                   ((draw-cons-tree--all-verticalp (car n)) (draw-cons-tree--draw-fixed-string "[o|/]")
-                    (%draw-members (cdr n) (cons (caar n) r)))
-                   (t (draw-cons-tree--draw-fixed-string "|")
-                      (%draw-members (cdr n) (cons (car n) r))))))
+                             (cond ((not (consp n)) (draw-cons-tree--mark-visited
+                                                     (draw-cons-tree--remove-trailing-nothing
+                                                      (reverse r))))
+                                   ((draw-cons-tree--emptyp (car n)) (draw-cons-tree--draw-fixed-string "")
+                                    (%draw-members (cdr n) (cons draw-cons-tree--nothing r)))
+                                   ((not (consp (car n))) (draw-cons-tree--draw-atom (car n))
+                                    (%draw-members (cdr n) (cons draw-cons-tree--nothing r)))
+                                   ((null (cdr n))
+                                    (%draw-members (cdr n) (cons (draw-cons-tree--draw-final (car n)) r)))
+                                   ((draw-cons-tree--all-verticalp (car n)) (draw-cons-tree--draw-fixed-string "[o|/]")
+                                    (%draw-members (cdr n) (cons (caar n) r)))
+                                   (t (draw-cons-tree--draw-fixed-string "|")
+                                      (%draw-members (cdr n) (cons (car n) r))))))
     (%draw-members (draw-cons-tree--members-of-x n) nil)))
 
 (defun draw-cons-tree--draw-final (n)
