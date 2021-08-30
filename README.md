@@ -1,7 +1,7 @@
 draw-cons-tree
 ==============
 
-Draws and ascii picture of a cons tree.
+Draw an ASCII picture of a cons tree.
 
     (draw-cons-tree '(a b (c nil 1)))
 
