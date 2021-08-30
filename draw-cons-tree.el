@@ -18,7 +18,7 @@
   :prefix "draw-cons-tree-"
   :group 'tools)
 
-(defcustom draw-cons-tree-prettify t
+(defcustom draw-cons-tree-prettify nil
   "Use box-drawing unicode characters for horizontal and vertical bars."
   :type 'boolean
   :group 'draw-cons-tree)
